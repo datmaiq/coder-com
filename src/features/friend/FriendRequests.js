@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import UserCard from "./UserCard";
 import {
   Stack,
   Typography,
@@ -9,8 +10,12 @@ import {
   Container,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { getFriendRequests } from "./friendSlice";
-import UserCard from "./UserCard";
+import {
+  getFriendRequests,
+  getOutgoingFriendRequests,
+  cancelOutgoingFriendRequest,
+} from "./friendSlice";
+
 import SearchInput from "../../components/SearchInput";
 
 function FriendRequests() {
@@ -21,6 +26,9 @@ function FriendRequests() {
     (state) => state.friend
   );
   const users = currentPageUsers.map((userId) => usersById[userId]);
+  const outgoingFriendRequests = useSelector(
+    (state) => state.friend.outgoingFriendRequests
+  );
   const dispatch = useDispatch();
 
   const handleSubmit = (searchQuery) => {
@@ -29,7 +37,12 @@ function FriendRequests() {
 
   useEffect(() => {
     dispatch(getFriendRequests({ filterName, page }));
+    dispatch(getOutgoingFriendRequests({ page: 1 }));
   }, [filterName, page, dispatch]);
+
+  const handleCancelOutgoingFriendRequest = (targetUserId) => {
+    dispatch(cancelOutgoingFriendRequest(targetUserId));
+  };
 
   return (
     <Container>
@@ -40,8 +53,10 @@ function FriendRequests() {
         <Stack spacing={2}>
           <Stack direction={{ xs: "column", md: "row" }} alignItems="center">
             <SearchInput handleSubmit={handleSubmit} />
+
             <Box sx={{ flexGrow: 1 }} />
-            <Typography
+
+            {/* <Typography
               variant="subtitle"
               sx={{ color: "text.secondary", ml: 1 }}
             >
@@ -50,6 +65,13 @@ function FriendRequests() {
                 : totalUsers === 1
                 ? `${totalUsers} request found`
                 : "No request found"}
+            </Typography> */}
+
+            <Typography
+              variant="subtitle"
+              sx={{ color: "text.secondary", ml: 1 }}
+            >
+              {outgoingFriendRequests.length} outgoing requests
             </Typography>
 
             <Pagination
@@ -64,6 +86,18 @@ function FriendRequests() {
           {users.map((user) => (
             <Grid key={user._id} item xs={12} md={4}>
               <UserCard profile={user} />
+            </Grid>
+          ))}
+        </Grid>
+
+        <Grid container spacing={3} my={1}>
+          {outgoingFriendRequests.map((userId) => (
+            <Grid key={userId} item xs={12} md={4}>
+              <UserCard
+                profile={usersById[userId]}
+                showCancelButton
+                onCancel={() => handleCancelOutgoingFriendRequest(userId)}
+              />
             </Grid>
           ))}
         </Grid>

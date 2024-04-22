@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Link,
@@ -7,17 +7,52 @@ import {
   Avatar,
   Typography,
   CardHeader,
-  IconButton,
+  Button,
+  TextField,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { fDate } from "../../utils/formatTime";
 
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import PostReaction from "./PostReaction";
 import CommentForm from "../comment/CommentForm";
 import CommentList from "../comment/CommentList";
+import { useDispatch } from "react-redux";
+import { deletePost } from "./postSlice";
+import { editPost } from "./postSlice";
+import ConfirmationDialog from "../../components/ConfirmationDialog";
 
 function PostCard({ post }) {
+  const dispatch = useDispatch();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState(post.content);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const handleDelete = () => {
+    setConfirmDelete(true);
+    // dispatch(deletePost(post._id));
+  };
+  const handleConfirmDelete = () => {
+    dispatch(deletePost(post._id));
+    setConfirmDelete(false);
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDelete(false);
+  };
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    dispatch(editPost(post._id, editedContent));
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditedContent(post.content);
+    setIsEditing(false);
+  };
+
   return (
     <Card>
       <CardHeader
@@ -37,40 +72,77 @@ function PostCard({ post }) {
           </Link>
         }
         subheader={
-          <Typography
-            variant="caption"
-            sx={{ display: "block", color: "text.secondary" }}
-          >
-            {fDate(post.createdAt)}
-          </Typography>
+          <Typography variant="caption">{fDate(post.createdAt)}</Typography>
         }
         action={
-          <IconButton>
-            <MoreVertIcon sx={{ fontSize: 30 }} />
-          </IconButton>
+          <>
+            <Button
+              onClick={handleEdit}
+              variant="contained"
+              sx={{ marginRight: 3 }}
+            >
+              EDIT
+            </Button>
+            <Button
+              onClick={handleDelete}
+              sx={{ background: "red", color: "white" }}
+            >
+              DELETE
+            </Button>
+            <ConfirmationDialog
+              open={confirmDelete}
+              onClose={handleCancelDelete}
+              onConfirm={handleConfirmDelete}
+              title="Delete Post"
+              content="Are you sure you want to delete this post?"
+            />
+          </>
         }
       />
 
-      <Stack spacing={2} sx={{ p: 3 }}>
-        <Typography>{post.content}</Typography>
-
-        {post.image && (
-          <Box
-            sx={{
-              borderRadius: 2,
-              overflow: "hidden",
-              height: 300,
-              "& img": { objectFit: "cover", width: 1, height: 1 },
-            }}
+      {isEditing ? (
+        <>
+          <TextField
+            value={editedContent}
+            onChange={(e) => setEditedContent(e.target.value)}
+            fullWidth
+            multiline
+            rows={4}
+            sx={{ mt: 2 }}
+          />
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ mt: 2, justifyContent: "flex-end" }}
           >
-            <img src={post.image} alt="post" />
-          </Box>
-        )}
+            <Button onClick={handleSave} variant="contained">
+              Save
+            </Button>
+            <Button onClick={handleCancel} variant="outlined">
+              Cancel
+            </Button>
+          </Stack>
+        </>
+      ) : (
+        <Typography sx={{ mt: 2 }}>{post.content}</Typography>
+      )}
 
-        <PostReaction post={post} />
-        <CommentList postId={post._id} />
-        <CommentForm postId={post._id} />
-      </Stack>
+      {post.image && (
+        <Box
+          sx={{
+            borderRadius: 2,
+            overflow: "hidden",
+            height: 300,
+            "& img": { objectFit: "cover", width: 1, height: 1 },
+          }}
+        >
+          <img src={post.image} alt="post" />
+        </Box>
+      )}
+
+      <PostReaction post={post} />
+      <CommentList postId={post._id} />
+      <CommentForm postId={post._id} />
     </Card>
   );
 }

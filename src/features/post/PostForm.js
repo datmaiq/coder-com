@@ -15,7 +15,7 @@ const yupSchema = Yup.object().shape({
 
 const defaultValues = {
   content: "",
-  image: null,
+  image: "",
 };
 
 function PostForm() {

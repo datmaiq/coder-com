@@ -8,6 +8,7 @@ const initialState = {
   currentPageUsers: [],
   usersById: {},
   totalPages: 1,
+  outgoingFriendRequests: [],
 };
 
 const slice = createSlice({
@@ -88,6 +89,26 @@ const slice = createSlice({
       state.isLoading = false;
       state.error = null;
       const { targetUserId } = action.payload;
+      state.usersById[targetUserId].friendship = null;
+    },
+    getOutgoingFriendRequestsSuccess(state, action) {
+      state.isLoading = false;
+      state.error = null;
+
+      const { users, count, totalPages } = action.payload;
+      users.forEach((user) => (state.usersById[user._id] = user));
+      state.outgoingFriendRequests = users.map((user) => user._id);
+      state.totalOutgoingFriendRequests = count;
+      state.totalPagesOutgoingFriendRequests = totalPages;
+    },
+    cancelOutgoingFriendRequestSuccess(state, action) {
+      state.isLoading = false;
+      state.error = null;
+
+      const { targetUserId } = action.payload;
+      state.outgoingFriendRequests = state.outgoingFriendRequests.filter(
+        (id) => id !== targetUserId
+      );
       state.usersById[targetUserId].friendship = null;
     },
   },
@@ -219,3 +240,36 @@ export const removeFriend = (targetUserId) => async (dispatch) => {
     toast.error(error.message);
   }
 };
+export const getOutgoingFriendRequests =
+  ({ filterName, page = 1, limit = 12 }) =>
+  async (dispatch) => {
+    dispatch(slice.actions.startLoading());
+    try {
+      const params = { page, limit };
+      if (filterName) params.name = filterName;
+      const response = await apiService.get("/friends/requests/outgoing", {
+        params,
+      });
+      dispatch(slice.actions.getOutgoingFriendRequestsSuccess(response.data));
+    } catch (error) {
+      dispatch(slice.actions.hasError(error.message));
+      toast.error(error.message);
+    }
+  };
+
+export const cancelOutgoingFriendRequest =
+  (targetUserId) => async (dispatch) => {
+    dispatch(slice.actions.startLoading());
+    try {
+      const response = await apiService.delete(
+        `/friends/requests/${targetUserId}`
+      );
+      dispatch(
+        slice.actions.cancelOutgoingFriendRequestSuccess({ targetUserId })
+      );
+      toast.success("Request cancelled");
+    } catch (error) {
+      dispatch(slice.actions.hasError(error.message));
+      toast.error(error.message);
+    }
+  };
