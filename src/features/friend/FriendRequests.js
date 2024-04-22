@@ -22,7 +22,7 @@ function FriendRequests() {
   const [filterName, setFilterName] = useState("");
   const [page, setPage] = React.useState(1);
 
-  const { currentPageUsers, usersById, totalUsers, totalPages } = useSelector(
+  const { currentPageUsers, usersById, totalPages } = useSelector(
     (state) => state.friend
   );
   const users = currentPageUsers.map((userId) => usersById[userId]);

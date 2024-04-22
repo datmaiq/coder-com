@@ -256,7 +256,6 @@ export const getOutgoingFriendRequests =
       toast.error(error.message);
     }
   };
-
 export const cancelOutgoingFriendRequest =
   (targetUserId) => async (dispatch) => {
     dispatch(slice.actions.startLoading());
@@ -264,6 +263,7 @@ export const cancelOutgoingFriendRequest =
       const response = await apiService.delete(
         `/friends/requests/${targetUserId}`
       );
+      console.log(response.data);
       dispatch(
         slice.actions.cancelOutgoingFriendRequestSuccess({ targetUserId })
       );
