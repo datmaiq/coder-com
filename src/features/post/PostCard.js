@@ -72,7 +72,9 @@ function PostCard({ post }) {
           </Link>
         }
         subheader={
-          <Typography variant="caption">{fDate(post.createdAt)}</Typography>
+          <Typography sx={{ margin: 3 }} variant="caption">
+            {fDate(post.createdAt)}
+          </Typography>
         }
         action={
           <>
@@ -124,7 +126,7 @@ function PostCard({ post }) {
           </Stack>
         </>
       ) : (
-        <Typography sx={{ mt: 2 }}>{post.content}</Typography>
+        <Typography sx={{ mt: 2, marginLeft: 3 }}>{post.content}</Typography>
       )}
 
       {post.image && (

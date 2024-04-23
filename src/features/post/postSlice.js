@@ -148,12 +148,21 @@ export const deletePost = (postId) => async (dispatch) => {
     toast.error(error.message);
   }
 };
-export const editPost = (postId, content) => async (dispatch) => {
+export const editPost = (postId, content, image) => async (dispatch) => {
   dispatch(slice.actions.startLoading());
   try {
-    const response = await apiService.put(`/posts/${postId}`, { content });
+    // upload new image to cloudinary
+    let imageUrl;
+    if (image) {
+      imageUrl = await cloudinaryUpload(image);
+    }
+
+    const response = await apiService.put(`/posts/${postId}`, {
+      content,
+      image: imageUrl || undefined, // if no new image is provided, keep the old one
+    });
     dispatch(slice.actions.editPostSuccess(response.data));
-    toast.success("Post edit successfully");
+    toast.success("Post edited successfully");
   } catch (error) {
     dispatch(slice.actions.hasError(error.message));
     toast.error(error.message);

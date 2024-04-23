@@ -17,9 +17,15 @@ const ConfirmationDialog = ({ open, onClose, onConfirm, title, content }) => {
         <Button onClick={onClose} color="primary">
           Cancel
         </Button>
-        <Button onClick={onConfirm} color="primary" autoFocus>
-          Confirm
-        </Button>
+        {title === "Edit Image" ? (
+          <Button onClick={onConfirm} color="primary" autoFocus>
+            Confirm
+          </Button>
+        ) : (
+          <Button onClick={() => onConfirm(true)} color="primary" autoFocus>
+            Confirm
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
